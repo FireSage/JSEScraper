@@ -17,3 +17,6 @@
 
 # Go workspace file
 go.work
+
+# swap files
+*.swp
