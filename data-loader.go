@@ -33,3 +33,17 @@ func GetStocksWithUrls(market string) []Stock {
 
 	return stockList
 }
+
+// load all stocks from JSE
+func loadJSE() []Stock {
+	stockList := GetStocksWithUrls("main")
+	// urls := GetStocksWithUrls("main")
+
+	for i, _ := range stockList {
+		stockList[i].loadStock()
+		// fmt.Println(stock)
+		// stockList = append(stockList, *stock)
+	}
+
+	return stockList
+}

@@ -11,7 +11,9 @@ func getDollarValueAsInt(moneyString string) int64 {
 	if strings.Index(moneyString, ".") == -1 {
 		moneyString = moneyString + "00"
 	} else {
-		moneyString = moneyString[:strings.Index(moneyString, ".")] + moneyString[strings.Index(moneyString, ".")+1:strings.Index(moneyString, ".")+3]
+		moneyString1 := moneyString[:strings.Index(moneyString, ".")]
+		moneyString2 := moneyString[strings.Index(moneyString, ".")+1:] + "00"
+		moneyString = moneyString1 + moneyString2[0:2]
 	}
 	moneyInt, _ := strconv.ParseInt(moneyString, 10, 64)
 

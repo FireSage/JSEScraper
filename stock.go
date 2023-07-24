@@ -16,6 +16,13 @@ type Stock struct {
 	LastTradedPrice  int64
 	LastTradedVolume uint64
 	JSEUrl           string
+	history          []PriceHistory
+}
+
+type PriceHistory struct {
+	Price  uint16
+	Volume uint64
+	Date   uint64
 }
 
 func newStock(name string, ticker string, sharecount uint64, closingPrice int64, lastTradedPrice int64, lastTradedVolume uint64) *Stock {
@@ -66,6 +73,33 @@ func (s *Stock) loadStock() {
 		}
 	})
 
+	dataCollector.OnHTML("script", func(e *colly.HTMLElement) {
+		if e.Index == 12 {
+			price_text := e.Text[strings.Index(e.Text, "name: 'Price',"):]
+			volume_text := e.Text[strings.Index(e.Text, "name: 'Volume',"):]
+			price_text = price_text[strings.Index(price_text, "[[")+2 : strings.Index(price_text, "]],")]
+			volume_text = volume_text[strings.Index(volume_text, "[[")+2 : strings.Index(volume_text, "]],")]
+			s.processPriceHistory(&price_text, &volume_text)
+		}
+	})
+
 	//attempt to visit url
 	dataCollector.Visit(s.JSEUrl)
+}
+
+// converts price history string to array of price history
+func (s *Stock) processPriceHistory(priceHistory *string, volumeeHistory *string) {
+	priceHist := strings.Split(*priceHistory, "],[")
+	volHist := strings.Split(*volumeeHistory, "],[")
+	var length int = len(volHist)
+	for i := 0; i < length; i++ {
+		date, _ := strconv.ParseUint(priceHist[i][0:strings.Index(priceHist[i], ",")], 10, 64)
+		price := uint16(getDollarValueAsInt(priceHist[i][strings.Index(priceHist[i], ",")+1:]))
+		volume, _ := strconv.ParseUint(volHist[i][strings.Index(volHist[i], ",")+1:], 10, 64)
+		var hist PriceHistory
+		hist.Date = date
+		hist.Price = price
+		hist.Volume = volume
+		s.history = append(s.history, hist)
+	}
 }
