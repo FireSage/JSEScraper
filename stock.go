@@ -37,7 +37,7 @@ func newStock(name string, ticker string, sharecount uint64, closingPrice int64,
 	return &stock
 }
 
-func (s *Stock) loadStock() {
+func (s *Stock) loadStock(history bool) {
 	dataCollector := colly.NewCollector()
 
 	// get name, ticker, close price
@@ -73,15 +73,18 @@ func (s *Stock) loadStock() {
 		}
 	})
 
-	dataCollector.OnHTML("script", func(e *colly.HTMLElement) {
-		if e.Index == 12 {
-			price_text := e.Text[strings.Index(e.Text, "name: 'Price',"):]
-			volume_text := e.Text[strings.Index(e.Text, "name: 'Volume',"):]
-			price_text = price_text[strings.Index(price_text, "[[")+2 : strings.Index(price_text, "]],")]
-			volume_text = volume_text[strings.Index(volume_text, "[[")+2 : strings.Index(volume_text, "]],")]
-			s.processPriceHistory(&price_text, &volume_text)
-		}
-	})
+	// load history if flag is true
+	if history {
+		dataCollector.OnHTML("script", func(e *colly.HTMLElement) {
+			if e.Index == 12 {
+				price_text := e.Text[strings.Index(e.Text, "name: 'Price',"):]
+				volume_text := e.Text[strings.Index(e.Text, "name: 'Volume',"):]
+				price_text = price_text[strings.Index(price_text, "[[")+2 : strings.Index(price_text, "]],")]
+				volume_text = volume_text[strings.Index(volume_text, "[[")+2 : strings.Index(volume_text, "]],")]
+				s.processPriceHistory(&price_text, &volume_text)
+			}
+		})
+	}
 
 	//attempt to visit url
 	dataCollector.Visit(s.JSEUrl)

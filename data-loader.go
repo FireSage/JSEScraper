@@ -35,12 +35,12 @@ func GetStocksWithUrls(market string) []Stock {
 }
 
 // load all stocks from JSE
-func loadJSE() []Stock {
+func loadJSE(history bool) []Stock {
 	stockList := GetStocksWithUrls("main")
 	// urls := GetStocksWithUrls("main")
 
 	for i, _ := range stockList {
-		stockList[i].loadStock()
+		stockList[i].loadStock(history)
 		// fmt.Println(stock)
 		// stockList = append(stockList, *stock)
 	}
