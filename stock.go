@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -16,7 +17,7 @@ type Stock struct {
 	LastTradedPrice  int64
 	LastTradedVolume uint64
 	JSEUrl           string
-	history          []PriceHistory
+	History          []PriceHistory
 }
 
 type PriceHistory struct {
@@ -88,6 +89,8 @@ func (s *Stock) loadStock(history bool) {
 
 	//attempt to visit url
 	dataCollector.Visit(s.JSEUrl)
+
+	// write_text_file(s.get_json_string(), s.Ticker)
 }
 
 // converts price history string to array of price history
@@ -103,6 +106,16 @@ func (s *Stock) processPriceHistory(priceHistory *string, volumeeHistory *string
 		hist.Date = date
 		hist.Price = price
 		hist.Volume = volume
-		s.history = append(s.history, hist)
+		s.History = append(s.History, hist)
 	}
+}
+
+func (s *Stock) get_json_string() string {
+	stock_string, _ := json.Marshal(s)
+	return string(stock_string)
+}
+
+func get_json_list(stocks []Stock) string {
+	stock_string, _ := json.Marshal(stocks)
+	return string(stock_string)
 }
