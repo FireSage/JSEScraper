@@ -6,9 +6,10 @@ import (
 	"os"
 )
 
-func write_json_file(data string, file_name string) {
+// write string to a text file
+func write_text_file(data string, file_name string) {
 
-	file, err := os.OpenFile(file_name+".json", os.O_RDWR|os.O_CREATE, 0775)
+	file, err := os.OpenFile(file_name, os.O_RDWR|os.O_CREATE, 0775)
 	if err != nil {
 		log.Print(err)
 		return
@@ -28,6 +29,7 @@ func write_json_file(data string, file_name string) {
 	}
 
 }
+
 func read_stocks_from_json_file(file_name string, stocklist *[]Stock) {
 	data, file_err := os.ReadFile(file_name)
 	if file_err != nil {

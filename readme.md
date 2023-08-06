@@ -6,3 +6,4 @@ This application is designed to scrape stock data from the Jamaica stock exchang
 
 ##flags
 -h    load price history
+-r    refresh the list of stocks, i.e. check if ne stocks have been listed

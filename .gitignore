@@ -22,5 +22,5 @@ go.work
 *.swp
 
 main
-
+stocklist.json
 .vscode/

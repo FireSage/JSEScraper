@@ -9,6 +9,12 @@ import (
 	"github.com/gocolly/colly"
 )
 
+var MARKET_COMBINED string = "combined"
+var MARKET_MAIN string = "main"
+var MARKET_JUNIOR string = "junior"
+var MARKET_USD string = "usd-equities"
+var MARKET_BOND string = "bond"
+
 type Stock struct {
 	Name             string
 	Ticker           string
@@ -43,9 +49,11 @@ func (s *Stock) loadStock(history bool) {
 
 	// get name, ticker, close price
 	dataCollector.OnHTML("h2", func(e *colly.HTMLElement) {
-		nameStr := e.Text
-		s.Name = (nameStr[2:strings.LastIndex(nameStr, " (")])
-		s.Ticker = (nameStr[(strings.LastIndex(nameStr, " (") + 2):strings.LastIndex(nameStr, ")")])
+		if s.Name == "" {
+			nameStr := e.Text
+			s.Name = (nameStr[2:strings.LastIndex(nameStr, " (")])
+			s.Ticker = (nameStr[(strings.LastIndex(nameStr, " (") + 2):strings.LastIndex(nameStr, ")")])
+		}
 
 		priceStr := e.DOM.Next().Text()
 		priceStr = priceStr[strings.Index(priceStr, "$")+1 : (strings.Index(priceStr, ".") + 3)]
@@ -54,11 +62,13 @@ func (s *Stock) loadStock(history bool) {
 
 	// get share count
 	dataCollector.OnHTML(".tw-bg-gray-50.tw-rounded-sm:first-child", func(e *colly.HTMLElement) {
-		var err error
-		shareCountString := e.ChildText(".tw-flex.tw-justify-between.tw-bg-gray-50.tw-p-4:nth-child(5) span:nth-child(2)")
-		s.ShareCount, _ = strconv.ParseUint(strings.ReplaceAll(shareCountString[0:strings.LastIndex(shareCountString, "\n u")], ",", ""), 10, 64)
-		if err != nil {
-			fmt.Println(err)
+		if s.ShareCount == 0 {
+			var err error
+			shareCountString := e.ChildText(".tw-flex.tw-justify-between.tw-bg-gray-50.tw-p-4:nth-child(5) span:nth-child(2)")
+			s.ShareCount, _ = strconv.ParseUint(strings.ReplaceAll(shareCountString[0:strings.LastIndex(shareCountString, "\n u")], ",", ""), 10, 64)
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
 	})
 
@@ -75,6 +85,7 @@ func (s *Stock) loadStock(history bool) {
 	})
 
 	// load history if flag is true
+	// TODO: check if history exists and append new entries
 	if history {
 		dataCollector.OnHTML("script", func(e *colly.HTMLElement) {
 			if e.Index == 12 {

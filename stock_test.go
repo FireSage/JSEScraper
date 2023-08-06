@@ -22,7 +22,7 @@ func TestProcessPriceHistory(t *testing.T) {
 
 	st.processPriceHistory(&price, &volume)
 
-	got := st.history
+	got := st.History
 
 	testHistoryCount := 378
 
