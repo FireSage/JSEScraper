@@ -35,6 +35,7 @@ func GetStocksWithUrls(market string, stockList *[]Stock) []Stock {
 
 // load all stocks from JSE
 func loadJSE(history bool, refresh_list bool) []Stock {
+	var length int
 	var stockList []Stock = make([]Stock, 0, 120)
 
 	if refresh_list {
@@ -43,8 +44,11 @@ func loadJSE(history bool, refresh_list bool) []Stock {
 		read_stocks_from_json_file("stocklist.json", &stockList)
 	}
 
-	for i, _ := range stockList {
+	length = len(stockList)
+
+	for i := 0; i < length; i++ {
 		stockList[i].loadStock(history)
+		// break/
 	}
 	write_text_file(get_json_list(stockList), "stocklist.json")
 

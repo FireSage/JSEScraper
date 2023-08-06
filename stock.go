@@ -85,7 +85,7 @@ func (s *Stock) loadStock(history bool) {
 	})
 
 	// load history if flag is true
-	// TODO: check if history exists and append new entries
+	// TODO: load corporate actions
 	if history {
 		dataCollector.OnHTML("script", func(e *colly.HTMLElement) {
 			if e.Index == 12 {
@@ -108,16 +108,22 @@ func (s *Stock) loadStock(history bool) {
 func (s *Stock) processPriceHistory(priceHistory *string, volumeeHistory *string) {
 	priceHist := strings.Split(*priceHistory, "],[")
 	volHist := strings.Split(*volumeeHistory, "],[")
+	var lastRecordedHistory uint64 = 0
+	if len(s.History) > 0 {
+		lastRecordedHistory = s.History[len(s.History)-1].Date
+	}
 	var length int = len(volHist)
 	for i := 0; i < length; i++ {
 		date, _ := strconv.ParseUint(priceHist[i][0:strings.Index(priceHist[i], ",")], 10, 64)
-		price := uint16(getDollarValueAsInt(priceHist[i][strings.Index(priceHist[i], ",")+1:]))
-		volume, _ := strconv.ParseUint(volHist[i][strings.Index(volHist[i], ",")+1:], 10, 64)
-		var hist PriceHistory
-		hist.Date = date
-		hist.Price = price
-		hist.Volume = volume
-		s.History = append(s.History, hist)
+		if lastRecordedHistory < date {
+			price := uint16(getDollarValueAsInt(priceHist[i][strings.Index(priceHist[i], ",")+1:]))
+			volume, _ := strconv.ParseUint(volHist[i][strings.Index(volHist[i], ",")+1:], 10, 64)
+			var hist PriceHistory
+			hist.Date = date
+			hist.Price = price
+			hist.Volume = volume
+			s.History = append(s.History, hist)
+		}
 	}
 }
 

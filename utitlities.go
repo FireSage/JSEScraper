@@ -8,7 +8,7 @@ import (
 func getDollarValueAsInt(moneyString string) int64 {
 	moneyString = strings.TrimSpace(moneyString)
 	moneyString = strings.Trim(moneyString, "$")
-	if strings.Index(moneyString, ".") == -1 {
+	if !strings.Contains(moneyString, ".") {
 		moneyString = moneyString + "00"
 	} else {
 		moneyString1 := moneyString[:strings.Index(moneyString, ".")]
