@@ -29,7 +29,7 @@ func TestProcessPriceHistory(t *testing.T) {
 	if len(got) != testHistoryCount {
 		t.Errorf("Expected %v  Price History Elements. Got %v", testHistoryCount, len(got))
 	}
-	if got[2].Price != 460 {
-		t.Errorf("Expected 460 Price History Elements. Got %v", got[2].Price)
+	if got[2].ClosePrice != 460 {
+		t.Errorf("Expected 460 Price History Elements. Got %v", got[2].ClosePrice)
 	}
 }

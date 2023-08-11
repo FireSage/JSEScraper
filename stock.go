@@ -27,9 +27,12 @@ type Stock struct {
 }
 
 type PriceHistory struct {
-	Price  uint16
-	Volume uint64
-	Date   uint64
+	OpenPrice  uint16
+	HighPrice  uint16
+	LowPrice   uint16
+	ClosePrice uint16
+	Volume     uint64
+	Date       uint64
 }
 
 func newStock(name string, ticker string, sharecount uint64, closingPrice int64, lastTradedPrice int64, lastTradedVolume uint64) *Stock {
@@ -89,11 +92,13 @@ func (s *Stock) loadStock(history bool) {
 	if history {
 		dataCollector.OnHTML("script", func(e *colly.HTMLElement) {
 			if e.Index == 12 {
-				price_text := e.Text[strings.Index(e.Text, "name: 'Price',"):]
-				volume_text := e.Text[strings.Index(e.Text, "name: 'Volume',"):]
-				price_text = price_text[strings.Index(price_text, "[[")+2 : strings.Index(price_text, "]],")]
-				volume_text = volume_text[strings.Index(volume_text, "[[")+2 : strings.Index(volume_text, "]],")]
-				s.processPriceHistory(&price_text, &volume_text)
+				if !strings.Contains(e.Text, "type: 'candlestick',\n name: ''") {
+					price_text := e.Text[strings.Index(e.Text, "type: 'candlestick',"):]
+					volume_text := e.Text[strings.Index(e.Text, "name: 'Volume',"):]
+					price_text = price_text[strings.Index(price_text, "[[")+2 : strings.Index(price_text, "]],")]
+					volume_text = volume_text[strings.Index(volume_text, "[[")+2 : strings.Index(volume_text, "]],")]
+					s.processPriceHistory(&price_text, &volume_text)
+				}
 			}
 		})
 	}
@@ -114,16 +119,25 @@ func (s *Stock) processPriceHistory(priceHistory *string, volumeeHistory *string
 	}
 	var length int = len(volHist)
 	for i := 0; i < length; i++ {
-		date, _ := strconv.ParseUint(priceHist[i][0:strings.Index(priceHist[i], ",")], 10, 64)
+		priceHistoryData := strings.Split(priceHist[i], ",")
+		date, _ := strconv.ParseUint(priceHistoryData[0], 10, 64)
+
 		if lastRecordedHistory < date {
-			price := uint16(getDollarValueAsInt(priceHist[i][strings.Index(priceHist[i], ",")+1:]))
+			openprice := uint16(getDollarValueAsInt(priceHistoryData[1]))
+			highprice := uint16(getDollarValueAsInt(priceHistoryData[2]))
+			LowPrice := uint16(getDollarValueAsInt(priceHistoryData[3]))
+			closePrice := uint16(getDollarValueAsInt(priceHistoryData[4]))
 			volume, _ := strconv.ParseUint(volHist[i][strings.Index(volHist[i], ",")+1:], 10, 64)
 			var hist PriceHistory
 			hist.Date = date
-			hist.Price = price
+			hist.OpenPrice = openprice
+			hist.HighPrice = highprice
+			hist.LowPrice = LowPrice
+			hist.ClosePrice = closePrice
 			hist.Volume = volume
 			s.History = append(s.History, hist)
 		}
+
 	}
 }
 
